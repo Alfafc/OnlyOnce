@@ -43,11 +43,16 @@ public class FileComparer<T> {
         }
     }
 
-    public ArrayList<ArrayList<ScannedFile>> getFileGroups() {
+    public ArrayList<ArrayList<ScannedFile>> getFileGroups(final boolean onlyWithRepeatedFiles) {
 
         final ArrayList<ArrayList<ScannedFile>> fileGroups = new ArrayList<ArrayList<ScannedFile>>(files.values().size());
         for (final ArrayList<ArrayList<ScannedFile>> fileGroup : files.values()) {
-            fileGroups.addAll(fileGroup);
+
+            for (final ArrayList<ScannedFile> scannedFiles : fileGroup) {
+                if (!onlyWithRepeatedFiles || scannedFiles.size() > 1) {
+                    fileGroups.add(scannedFiles);
+                }
+            }
         }
         return fileGroups;
     }

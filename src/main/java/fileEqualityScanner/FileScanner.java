@@ -26,14 +26,11 @@ public class FileScanner {
         skipConditions.add(skipCondition);
     }
 
-    public List<ArrayList<ScannedFile>> getFileGroups(final boolean onlyWithRepeatedFiles) {
+    public ArrayList<ArrayList<ScannedFile>> getFileGroups(final boolean onlyWithRepeatedFiles) {
 
         final ArrayList<ArrayList<ScannedFile>> fileGroups = new ArrayList<ArrayList<ScannedFile>>(fileComparers.size() * 30);
         for (final FileComparer<?> fileComparer : fileComparers) {
-
-            if(!onlyWithRepeatedFiles || fileGroups.size() > 1)
-
-            fileGroups.addAll(fileComparer.getFileGroups());
+            fileGroups.addAll(fileComparer.getFileGroups(onlyWithRepeatedFiles));
         }
         return fileGroups;
     }

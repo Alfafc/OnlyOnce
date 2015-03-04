@@ -1,8 +1,11 @@
 package fileEqualityScanner;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class ScannedFile {
+public class ScannedFile implements Serializable {
+
+    private static final long serialVersionUID = -2645028126125683552L;
 
     public final String fullPath;
     public final String folder;
