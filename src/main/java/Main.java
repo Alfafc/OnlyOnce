@@ -23,9 +23,10 @@ public class Main {
 
         long start = System.currentTimeMillis();
         ArrayList<ArrayList<ScannedFile>> groupsWithRepeatedItems = FileSerializer.DeserializeObject(SERIALIZED_RESULT_FILE_PATH);
+        groupsWithRepeatedItems = null;
         if (groupsWithRepeatedItems == null) {
 
-            System.err.println("NO SERIALIZO!!!");
+//            System.err.println("NO SERIALIZO!!!");
             final FileScanner fileScanner = new FileScanner();
             fileScanner.addFileComparerCriteria(new SameNameComparisonCriteria());
 //            fileScanner.addFileComparerCriteria(new SameSizeAndContentComparisonCriteria());

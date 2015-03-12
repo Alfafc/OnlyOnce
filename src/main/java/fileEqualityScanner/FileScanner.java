@@ -2,13 +2,13 @@ package fileEqualityScanner;
 
 import fileEqualityScanner.comparer.FileComparisonCriteria;
 import utils.Condition;
+import utils.Func;
+import utils.Pool;
+import utils.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,14 +35,28 @@ public class FileScanner {
         return fileGroups;
     }
 
-    public void scanPath(final String rootDirectoryPath) throws IOException {
+    public void scanPath(final String rootDirectoryPath) {
 
         scanPath(rootDirectoryPath, true);
     }
 
-    public void scanPath(final String rootDirectoryPath, final boolean recursively) throws IOException {
+    public void scanPath(final String rootDirectoryPath, final boolean recursively) {
 
-        final Path dir = FileSystems.getDefault().getPath(rootDirectoryPath);
+        final ScanWorker scanWorker = new ScanWorker(5);
+
+        scanWorker.work(rootDirectoryPath, recursively);
+
+        scanWorker.waitUntilFinish();
+
+        System.err.println();
+        System.err.println("TERMINO SCAN");
+        System.err.println();
+    }
+
+    private void scanPathImpl(final String rootDirectoryPath, final boolean recursively, final ScanWorker scanWorker) {
+
+        final Path dir = Paths.get(rootDirectoryPath);
+
         DirectoryStream<Path> stream = null;
         try {
             stream = Files.newDirectoryStream(dir);
@@ -55,7 +69,7 @@ public class FileScanner {
                 if (file.isDirectory()) {
                     // scan directories recursively
                     if (recursively) {
-                        scanPath(path.toAbsolutePath().toString(), true);
+                        scanWorker.work(path.toAbsolutePath().toString(), recursively);
                     }
                     continue;
                 }
@@ -74,7 +88,11 @@ public class FileScanner {
             System.err.println("Error scanning [" + rootDirectoryPath + "]: [" + e.getMessage() + "]");
         } finally {
             if (stream != null) {
-                stream.close();
+                try {
+                    stream.close();
+                } catch (final IOException e) {
+                    System.err.println("Error closing stream: [" + e.getMessage() + "]");
+                }
             }
         }
     }
@@ -87,5 +105,31 @@ public class FileScanner {
             }
         }
         return false;
+    }
+
+    private class ScanWorker {
+
+        private final ThreadPool threadsPool;
+
+        public ScanWorker(final int workerSize) {
+
+            this.threadsPool = new ThreadPool(workerSize);
+        }
+
+        public void work(final String filePath, final boolean recursively) {
+
+            System.err.println("Process " + filePath);
+            threadsPool.processInPool(new Runnable() {
+                @Override
+                public void run() {
+                    scanPathImpl(filePath, recursively, ScanWorker.this);
+                }
+            });
+        }
+
+        public void waitUntilFinish() {
+
+            threadsPool.waitUntilFinish();
+        }
     }
 }
