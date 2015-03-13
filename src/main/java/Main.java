@@ -28,8 +28,8 @@ public class Main {
 
 //            System.err.println("NO SERIALIZO!!!");
             final FileScanner fileScanner = new FileScanner();
-            fileScanner.addFileComparerCriteria(new SameNameComparisonCriteria());
-//            fileScanner.addFileComparerCriteria(new SameSizeAndContentComparisonCriteria());
+//            fileScanner.addFileComparerCriteria(new SameNameComparisonCriteria());
+            fileScanner.addFileComparerCriteria(new SameSizeAndContentComparisonCriteria());
 
             fileScanner.skipFile(new Condition<ScannedFile>() {
                 @Override
@@ -53,7 +53,7 @@ public class Main {
 
         printResult(groupsWithRepeatedItems);
 
-        System.out.println("Elapsed scan: " + (System.currentTimeMillis() - start) + " ms");
+        System.err.println("Elapsed scan: " + (System.currentTimeMillis() - start) + " ms");
 
         start = System.currentTimeMillis();
 
@@ -72,7 +72,7 @@ public class Main {
 
         fileReplacer.replace(groupsWithRepeatedItems, REPEATED_DIRECTORY_PATH);
 
-        System.out.println("Elapsed move: " + (System.currentTimeMillis() - start) + " ms");
+        System.err.println("Elapsed move: " + (System.currentTimeMillis() - start) + " ms");
 
 //        long savedSpace = 0;
 //        long fileCount = 0;

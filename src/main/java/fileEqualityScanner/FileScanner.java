@@ -2,8 +2,6 @@ package fileEqualityScanner;
 
 import fileEqualityScanner.comparer.FileComparisonCriteria;
 import utils.Condition;
-import utils.Func;
-import utils.Pool;
 import utils.ThreadPool;
 
 import java.io.File;
@@ -13,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileScanner {
+    private static final int MAX_THREADS = 1;
+    private static final int SCANNED_FILES_PRE_THREAD = 1;
     private final List<Condition<ScannedFile>> skipConditions = new ArrayList<Condition<ScannedFile>>();
     private final List<FileComparer> fileComparers = new ArrayList<FileComparer>();
 
@@ -42,7 +42,7 @@ public class FileScanner {
 
     public void scanPath(final String rootDirectoryPath, final boolean recursively) {
 
-        final ScanWorker scanWorker = new ScanWorker(5);
+        final ScanWorker scanWorker = new ScanWorker(MAX_THREADS);
 
         scanWorker.work(rootDirectoryPath, recursively);
 
@@ -55,11 +55,11 @@ public class FileScanner {
 
     private void scanPathImpl(final String rootDirectoryPath, final boolean recursively, final ScanWorker scanWorker) {
 
-        final Path dir = Paths.get(rootDirectoryPath);
+        final Path directory = Paths.get(rootDirectoryPath);
 
         DirectoryStream<Path> stream = null;
         try {
-            stream = Files.newDirectoryStream(dir);
+            stream = Files.newDirectoryStream(directory);
 
             for (Path path : stream) {
 
