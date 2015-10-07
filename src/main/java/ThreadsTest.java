@@ -1,6 +1,10 @@
-import utils.ThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.alfascompany.thread.ThreadPool;
 
 public class ThreadsTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ThreadsTest.class);
 
     public static void main(String[] args) {
 
@@ -10,25 +14,22 @@ public class ThreadsTest {
         final ThreadPool threadPool = new ThreadPool(50);
 
         for (int j = 0; j < 50; j++) {
-            threadPool.processInPool(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(1000l);
-                    } catch (InterruptedException e) {
+            threadPool.processInPool(() -> {
+                try {
+                    Thread.sleep(1000l);
+                } catch (InterruptedException e) {
 
-                    }
-
-                    System.err.println((i[0]++) + " print " + Thread.currentThread().getName());
-                    System.err.println("Elapsed time " + (System.currentTimeMillis() - startMillis));
                 }
+
+                logger.debug((i[0]++) + " print " + Thread.currentThread().getName());
+                logger.debug("Elapsed time " + (System.currentTimeMillis() - startMillis));
             });
-            System.err.println("Start to run " + j);
+            logger.debug("Start to run " + j);
         }
 
         threadPool.waitUntilFinish();
 
-        System.err.println("TERMINO");
+        logger.debug("TERMINO");
     }
 }
 

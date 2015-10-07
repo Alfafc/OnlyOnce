@@ -1,11 +1,8 @@
 import fileEqualityScanner.FileReplacer;
-import fileEqualityScanner.FileScanner;
-import fileEqualityScanner.ScannedFile;
-import fileEqualityScanner.comparer.commons.SameNameComparisonCriteria;
-import fileEqualityScanner.comparer.commons.SameSizeAndContentComparisonCriteria;
-import utils.Comparison;
-import utils.Condition;
-import utils.serialization.FileSerializer;
+import com.alfascompany.io.scanners.MultiThreadFileScanner;
+import com.alfascompany.io.equalityScanners.ScannedFile;
+import com.alfascompany.io.equalityScanners.criterias.SameNameEqualityCriteria;
+import com.alfascompany.io.serialization.FileSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,9 +10,9 @@ import java.util.List;
 
 public class Main {
 
+    //    private final static String ROOT_DIRECTORY_PATH = "C:\\Users\\fliacos\\Desktop\\repe";
     private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped\\Fotos&Videos";
     //    private final static String ROOT_DIRECTORY_PATH = "G:\\";
-//    private final static String ROOT_DIRECTORY_PATH = "C:\\Users\\fliacos\\Desktop\\repe";
     private final static String REPEATED_DIRECTORY_PATH = "D:\\Repetido_BORRAR_FER";
     private final static String SERIALIZED_RESULT_FILE_PATH = ROOT_DIRECTORY_PATH + "\\serialized.info";
 
@@ -26,27 +23,16 @@ public class Main {
         groupsWithRepeatedItems = null;
         if (groupsWithRepeatedItems == null) {
 
-//            System.err.println("NO SERIALIZO!!!");
-            final FileScanner fileScanner = new FileScanner();
-//            fileScanner.addFileComparerCriteria(new SameNameComparisonCriteria());
-            fileScanner.addFileComparerCriteria(new SameSizeAndContentComparisonCriteria());
+            final MultiThreadFileScanner multiThreadFileScanner = new MultiThreadFileScanner();
+            multiThreadFileScanner.addFileComparerCriteria(new SameNameEqualityCriteria());
+//            fileScanner.addFileComparerCriteria(new SameSizeAndContentComparisonCriteria());
 
-            fileScanner.skipFile(new Condition<ScannedFile>() {
-                @Override
-                public boolean applyTo(final ScannedFile scannedFile) {
-                    return ".nomedia".equals(scannedFile.name);
-                }
-            });
-            fileScanner.skipFile(new Condition<ScannedFile>() {
-                @Override
-                public boolean applyTo(final ScannedFile scannedFile) {
-                    return "desktop.ini".equals(scannedFile.name);
-                }
-            });
+            multiThreadFileScanner.skipFile(scannedFile -> ".nomedia".equals(scannedFile.name));
+            multiThreadFileScanner.skipFile(scannedFile -> "desktop.ini".equals(scannedFile.name));
 
-            fileScanner.scanPath(ROOT_DIRECTORY_PATH);
+            multiThreadFileScanner.scanRecursively(ROOT_DIRECTORY_PATH);
 
-            groupsWithRepeatedItems = fileScanner.getFileGroups(true);
+            groupsWithRepeatedItems = multiThreadFileScanner.getFileGroups(true);
 
             FileSerializer.SerializeObject(groupsWithRepeatedItems, SERIALIZED_RESULT_FILE_PATH);
         }
@@ -58,16 +44,13 @@ public class Main {
         start = System.currentTimeMillis();
 
         FileReplacer fileReplacer = new FileReplacer();
-        fileReplacer.add(new Comparison<ScannedFile>() {
-            @Override
-            public boolean compare(final ScannedFile anObject, final ScannedFile anotherObject) {
+        fileReplacer.add((anObject, anotherObject) -> {
 
-                if ("D:\\CloudBackuped\\Fotos&Videos\\2012_2013 Fotos Graciosas".equals(anObject.folder)
-                        && "D:\\CloudBackuped\\Fotos&Videos\\2014_04_07 Corsa".equals(anotherObject.folder)) {
-                    return true;
-                }
-                return false;
+            if ("D:\\CloudBackuped\\Fotos&Videos\\2012_2013 Fotos Graciosas".equals(anObject.folder)
+                    && "D:\\CloudBackuped\\Fotos&Videos\\2014_04_07 Corsa".equals(anotherObject.folder)) {
+                return true;
             }
+            return false;
         });
 
         fileReplacer.replace(groupsWithRepeatedItems, REPEATED_DIRECTORY_PATH);
