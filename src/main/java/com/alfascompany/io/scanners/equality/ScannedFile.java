@@ -1,4 +1,4 @@
-package com.alfascompany.io.equalityScanners;
+package com.alfascompany.io.scanners.equality;
 
 import java.io.File;
 import java.io.Serializable;

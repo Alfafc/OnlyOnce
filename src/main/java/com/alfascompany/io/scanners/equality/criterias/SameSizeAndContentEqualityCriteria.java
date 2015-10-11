@@ -1,13 +1,15 @@
-package com.alfascompany.io.equalityScanners.criterias;
+package com.alfascompany.io.scanners.equality.criterias;
 
-import com.alfascompany.io.equalityScanners.EqualityCriteria;
-import com.alfascompany.io.equalityScanners.ScannedFile;
+import com.alfascompany.io.scanners.equality.EqualityCriteria;
+import com.alfascompany.io.scanners.equality.ScannedFile;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 
 public class SameSizeAndContentEqualityCriteria implements EqualityCriteria<Long> {
+
+    private static final long serialVersionUID = 1921632076687428494L;
 
     @Override
     public boolean test(final ScannedFile fileItem1, final ScannedFile fileItem2) {

@@ -1,9 +1,11 @@
-package com.alfascompany.io.equalityScanners.criterias;
+package com.alfascompany.io.scanners.equality.criterias;
 
-import com.alfascompany.io.equalityScanners.EqualityCriteria;
-import com.alfascompany.io.equalityScanners.ScannedFile;
+import com.alfascompany.io.scanners.equality.EqualityCriteria;
+import com.alfascompany.io.scanners.equality.ScannedFile;
 
 public class SameNameEqualityCriteria implements EqualityCriteria<String> {
+
+    private static final long serialVersionUID = 5659770514186302519L;
 
     @Override
     public boolean test(final ScannedFile fileItem1, final ScannedFile fileItem2) {

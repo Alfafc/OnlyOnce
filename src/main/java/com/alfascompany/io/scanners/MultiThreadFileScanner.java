@@ -20,16 +20,14 @@ public class MultiThreadFileScanner {
     private final List<Predicate<File>> skipFiles = new ArrayList<>();
     private int threadsCount = 100;
 
-    public MultiThreadFileScanner setThreadsCount(final int threadsCount) {
+    public void setThreadsCount(final int threadsCount) {
 
         this.threadsCount = threadsCount;
-        return this;
     }
 
-    public MultiThreadFileScanner skipFile(final Predicate<File> skipCondition) {
+    public void skipFile(final Predicate<File> skipCondition) {
 
         skipFiles.add(skipCondition);
-        return this;
     }
 
     public void scanRecursively(final String rootPath, final Consumer<File> consumer) {
@@ -39,7 +37,8 @@ public class MultiThreadFileScanner {
 
     public void scan(final String rootPath, final Consumer<File> consumer, final boolean recursively) {
 
-        logger.debug("Scan path started! " + System.currentTimeMillis());
+        final long start = System.currentTimeMillis();
+        logger.debug("Scan path started!");
 
         final ThreadPool threadPool = new ThreadPool(threadsCount);
 
@@ -47,7 +46,7 @@ public class MultiThreadFileScanner {
 
         threadPool.waitUntilFinish();
 
-        logger.debug("Scan path finished! " + System.currentTimeMillis());
+        logger.debug("Scan path finished in {" + (System.currentTimeMillis() - start) + "} millis!");
     }
 
     private void scanFolder(final ThreadPool threadPool, final Path rootPath, final Consumer<File> consumer, final boolean recursively) {
