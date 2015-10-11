@@ -21,7 +21,6 @@ public class FileSerializer {
             }
 
         } catch (final IOException e) {
-            logger.error("Error serializing object [" + e.getMessage() + "]", e);
             throw new RuntimeException("Error serializing object [" + e.getMessage() + "]", e);
         } finally {
             tryToCloseStream(file);
@@ -29,7 +28,7 @@ public class FileSerializer {
         }
     }
 
-    public static <T> T DeserializeObject(final String filePath) {
+    public static <T> T DeserializeObject(final String filePath, final boolean failOnError) {
 
         InputStream file = null;
         InputStream buffer = null;
@@ -40,7 +39,10 @@ public class FileSerializer {
                 return (T) input.readObject();
             }
         } catch (final Exception e) {
-            logger.error("Error serializing object [" + e.getMessage() + "]", e);
+            if (failOnError) {
+                throw new RuntimeException("Error deserializing object [" + e.getMessage() + "]", e);
+            }
+            logger.warn("Error deserializing object [" + e.getMessage() + "]");
         } finally {
             tryToCloseStream(file);
             tryToCloseStream(buffer);

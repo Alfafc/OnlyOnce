@@ -31,7 +31,7 @@ public class Main {
 
         System.err.println("Elapsed scan: " + (System.currentTimeMillis() - start) + " ms");
 
-        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(false));
+//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(false));
         filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
 
         start = System.currentTimeMillis();

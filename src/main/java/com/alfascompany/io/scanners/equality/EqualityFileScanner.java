@@ -37,7 +37,7 @@ public class EqualityFileScanner extends MultiThreadFileScanner {
         final String cacheFilePath = rootPath + "/equalityFileScanner.cache";
 
         if (tryToUseCachedResults) {
-            final List<FilesGroupedByEqualityCriteria> serializedResult = FileSerializer.DeserializeObject(cacheFilePath);
+            final List<FilesGroupedByEqualityCriteria> serializedResult = FileSerializer.DeserializeObject(cacheFilePath, false);
             if (serializedResult != null) {
                 return serializedResult;
             }
