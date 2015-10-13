@@ -34,7 +34,11 @@ public class ThreadPool {
 
         new Thread(() -> {
 
-            runnable.run();
+            try {
+                runnable.run();
+            } catch (final Exception e) {
+                logger.error("Error running one thread {" + e.getMessage() + "}", e);
+            }
 
             synchronized (ThreadPool.this) {
                 currentThreadsSize--;

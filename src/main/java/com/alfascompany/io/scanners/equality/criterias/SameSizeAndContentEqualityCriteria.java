@@ -14,7 +14,7 @@ public class SameSizeAndContentEqualityCriteria implements EqualityCriteria<Long
     @Override
     public boolean test(final ScannedFile fileItem1, final ScannedFile fileItem2) {
 
-        if (fileItem1.size != fileItem2.size) {
+        if (fileItem1.sizeInBytes != fileItem2.sizeInBytes) {
             return false;
         }
 
@@ -30,6 +30,6 @@ public class SameSizeAndContentEqualityCriteria implements EqualityCriteria<Long
 
     @Override
     public Long getFastPseudoUniqueKey(final ScannedFile fileItem) {
-        return fileItem.size;
+        return fileItem.sizeInBytes;
     }
 }
