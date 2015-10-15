@@ -13,18 +13,18 @@ public class Main {
     //    private final static String ROOT_DIRECTORY_PATH = "G:\\";
 //    private final static String ROOT_DIRECTORY_PATH = "G:\\RecuperadoJPG";
 //    private final static String ROOT_DIRECTORY_PATH = "G:\\RecuperadoMP3";
-    private final static String ROOT_DIRECTORY_PATH = "G:\\Salvado";
-//        private final static String ROOT_DIRECTORY_PATH = "C:\\Users\\fliacos\\Desktop";
-    //    private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped\\Fotos&Videos";
+//    private final static String ROOT_DIRECTORY_PATH = "G:\\Salvado";
+//    private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped\\Fotos&Videos";
+    private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped";
 
     public static void main(final String[] args) throws IOException {
 
         long start = System.currentTimeMillis();
 
         final EqualityFileScanner equalityFileScanner = new EqualityFileScanner();
-        equalityFileScanner.addEqualityCriteria(new SameNamePrefixEqualityCriteria());
+        equalityFileScanner.addEqualityCriteria(new SameSizeAndContentEqualityCriteria());
         equalityFileScanner.setThreadsCount(4);
-        equalityFileScanner.tryToUseCachedResults(false);
+        equalityFileScanner.tryToUseCachedResults(true);
         equalityFileScanner.saveResultsForCache(true);
         equalityFileScanner.skipFile(file -> ".nomedia".equals(file.getName()));
         equalityFileScanner.skipFile(file -> "desktop.ini".equals(file.getName()));

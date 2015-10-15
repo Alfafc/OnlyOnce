@@ -10,9 +10,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -72,6 +70,9 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
                 }
             }
         }
+        // order by full path
+        equalityFilesGroupList.stream().forEach(e -> e.sort((o1, o2) -> o1.fullPath.compareTo(o2.fullPath)));
+        equalityFilesGroupList.sort((o1, o2) -> o1.get(0).fullPath.compareTo(o2.get(0).fullPath));
         return equalityFilesGroupList;
     }
 
@@ -88,18 +89,32 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
 
         logger.info("Total size scanned {" + totalSize + "} bytes and duplicated files size {" + duplicatedSize + "} bytes");
-        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and duplicated files size {" + ((double) duplicatedSize / 1024d / 1024d) + "} mb");
+        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and NOT duplicated files size {" + ((double) duplicatedSize / 1024d / 1024d) + "} mb");
     }
 
     public void printEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
 
-        getEqualityFilesGroups(onlyWithRepeatedFiles).stream().forEach(e -> logger.info("Repeated files: " + e));
+        final ArrayList<ArrayList<ScannedFile>> equalityFilesGroups = getEqualityFilesGroups(onlyWithRepeatedFiles);
+        equalityFilesGroups.stream().forEach(e -> logger.info("Repeated files: " + e.stream().map(a -> a.fullPath + " " + a.getSizeInMegaBytes()).collect(Collectors.toList())));
+        logger.info("Total groups: " + equalityFilesGroups.size());
     }
 
     public void printEqualityFilesGroupsGroupByFolder(final boolean onlyWithRepeatedFiles) {
 
-        getEqualityFilesGroups(onlyWithRepeatedFiles).stream().collect(Collectors.groupingBy(scannedFiles ->
-                scannedFiles.stream().map(scannedFile -> scannedFile.folder).collect(Collectors.toList()))).keySet().forEach(e -> logger.info("Folder: " + e));
+        int quantity = 0;
+        final SortedSet<String> folders = new TreeSet<>();
+        for (final ArrayList<ScannedFile> equalityFilesGroup : getEqualityFilesGroups(onlyWithRepeatedFiles)) {
+
+            if (folders.size() > 0 && !folders.contains(equalityFilesGroup.get(0).folder)) {
+                quantity++;
+                logger.info("Folder: " + folders);
+                folders.clear();
+            }
+            for (final ScannedFile scannedFile : equalityFilesGroup) {
+                folders.add(scannedFile.folder);
+            }
+        }
+        logger.info("Total groups: " + quantity);
     }
 
     public void printEqualityFilesGroupsGroupThatMatchRule(final BiPredicate<ScannedFile, ScannedFile> rule) {

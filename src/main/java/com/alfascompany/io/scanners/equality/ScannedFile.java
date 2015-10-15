@@ -19,6 +19,10 @@ public class ScannedFile implements Serializable {
         this.sizeInBytes = file.length();
     }
 
+    public long getSizeInMegaBytes() {
+        return (long) ((double) sizeInBytes / 1024d / 1024d);
+    }
+
     @Override
     public String toString() {
         return "ScannedFile{" +
