@@ -19,7 +19,7 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
     private static final long serialVersionUID = -795646043306946698L;
 
     private static final Logger logger = LoggerFactory.getLogger(FilesGroupedByEqualityCriteria.class);
-    private final Map<T, ArrayList<ArrayList<ScannedFile>>> files = new HashMap<>(500);
+    private final Map<T, ArrayList<TreeSet<ScannedFile>>> files = new HashMap<>(500);
     private final EqualityCriteria<T> equalityCriteria;
 
     public FilesGroupedByEqualityCriteria(final EqualityCriteria<T> equalityCriteria) {
@@ -30,7 +30,7 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
     public void addFile(final ScannedFile scannedFile) {
 
         final T fastPseudoUniqueKey = equalityCriteria.getFastPseudoUniqueKey(scannedFile);
-        ArrayList<ArrayList<ScannedFile>> fileGroupList = files.get(fastPseudoUniqueKey);
+        ArrayList<TreeSet<ScannedFile>> fileGroupList = files.get(fastPseudoUniqueKey);
 
         if (fileGroupList == null) {
             fileGroupList = new ArrayList<>();
@@ -38,17 +38,17 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
 
         // there can be more than one group of equals files that have the same pseudo key
-        ArrayList<ScannedFile> selectedFileGroup = null;
-        for (final ArrayList<ScannedFile> fileGroup : fileGroupList) {
+        TreeSet<ScannedFile> selectedFileGroup = null;
+        for (final TreeSet<ScannedFile> fileGroup : fileGroupList) {
 
-            if (equalityCriteria.test(fileGroup.get(0), scannedFile)) {
+            if (equalityCriteria.test(fileGroup.first(), scannedFile)) {
                 selectedFileGroup = fileGroup;
                 break;
             }
         }
 
         if (selectedFileGroup == null) {
-            selectedFileGroup = new ArrayList<>();
+            selectedFileGroup = new TreeSet<>();
             fileGroupList.add(selectedFileGroup);
         }
 
@@ -59,20 +59,18 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         files.clear();
     }
 
-    public ArrayList<ArrayList<ScannedFile>> getEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
+    public ArrayList<TreeSet<ScannedFile>> getEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
 
-        final ArrayList<ArrayList<ScannedFile>> equalityFilesGroupList = new ArrayList<>(files.values().size());
-        for (final ArrayList<ArrayList<ScannedFile>> equalityFilesGroups : files.values()) {
+        final ArrayList<TreeSet<ScannedFile>> equalityFilesGroupList = new ArrayList<>(files.values().size());
+        for (final ArrayList<TreeSet<ScannedFile>> equalityFilesGroups : files.values()) {
 
-            for (final ArrayList<ScannedFile> scannedFiles : equalityFilesGroups) {
+            for (final TreeSet<ScannedFile> scannedFiles : equalityFilesGroups) {
                 if (!onlyWithRepeatedFiles || scannedFiles.size() > 1) {
                     equalityFilesGroupList.add(scannedFiles);
                 }
             }
         }
-        // order by full path
-        equalityFilesGroupList.stream().forEach(e -> e.sort((o1, o2) -> o1.fullPath.compareTo(o2.fullPath)));
-        equalityFilesGroupList.sort((o1, o2) -> o1.get(0).fullPath.compareTo(o2.get(0).fullPath));
+        equalityFilesGroupList.sort((o1, o2) -> o1.first().fullPath.compareTo(o2.first().fullPath));
         return equalityFilesGroupList;
     }
 
@@ -80,9 +78,9 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
 
         long totalSize = 0;
         long duplicatedSize = 0;
-        for (final ArrayList<ScannedFile> scannedFiles : getEqualityFilesGroups(false)) {
+        for (final TreeSet<ScannedFile> scannedFiles : getEqualityFilesGroups(false)) {
 
-            duplicatedSize += scannedFiles.get(0).sizeInBytes;
+            duplicatedSize += scannedFiles.first().sizeInBytes;
             for (final ScannedFile scannedFile : scannedFiles) {
                 totalSize += scannedFile.sizeInBytes;
             }
@@ -94,7 +92,7 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
 
     public void printEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
 
-        final ArrayList<ArrayList<ScannedFile>> equalityFilesGroups = getEqualityFilesGroups(onlyWithRepeatedFiles);
+        final ArrayList<TreeSet<ScannedFile>> equalityFilesGroups = getEqualityFilesGroups(onlyWithRepeatedFiles);
         equalityFilesGroups.stream().forEach(e -> logger.info("Repeated files: " + e.stream().map(a -> a.fullPath + " " + a.getSizeInMegaBytes()).collect(Collectors.toList())));
         logger.info("Total groups: " + equalityFilesGroups.size());
     }
@@ -103,9 +101,9 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
 
         int quantity = 0;
         final SortedSet<String> folders = new TreeSet<>();
-        for (final ArrayList<ScannedFile> equalityFilesGroup : getEqualityFilesGroups(onlyWithRepeatedFiles)) {
+        for (final TreeSet<ScannedFile> equalityFilesGroup : getEqualityFilesGroups(onlyWithRepeatedFiles)) {
 
-            if (folders.size() > 0 && !folders.contains(equalityFilesGroup.get(0).folder)) {
+            if (folders.size() > 0 && !folders.contains(equalityFilesGroup.first().folder)) {
                 quantity++;
                 logger.info("Folder: " + folders);
                 folders.clear();
@@ -119,11 +117,11 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
 
     public void printEqualityFilesGroupsGroupThatMatchRule(final BiPredicate<ScannedFile, ScannedFile> rule) {
 
-        for (ArrayList<ScannedFile> scannedFiles : getEqualityFilesGroups(false)) {
+        for (final TreeSet<ScannedFile> scannedFiles : getEqualityFilesGroups(false)) {
 
             boolean allEqual = true;
-            for (ScannedFile scannedFile1 : scannedFiles) {
-                for (ScannedFile scannedFile2 : new ArrayList<>(scannedFiles)) {
+            for (final ScannedFile scannedFile1 : scannedFiles) {
+                for (final ScannedFile scannedFile2 : new ArrayList<>(scannedFiles)) {
 
                     if (!rule.test(scannedFile1, scannedFile2)) {
                         allEqual = false;
@@ -138,22 +136,19 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
     }
 
-    public void removeDuplicated() {
+    public void removeDuplicated(final BiPredicate<ScannedFile, TreeSet<ScannedFile>> rule) {
 
-        for (final ArrayList<ScannedFile> scannedFiles : getEqualityFilesGroups(true)) {
+        for (final TreeSet<ScannedFile> scannedFiles : getEqualityFilesGroups(true)) {
 
-            final ScannedFile scannedFileWithLowerLengthName = scannedFiles.stream().min((f1, f2) -> Integer.compare(f1.name.length(), f2.name.length())).get();
+            for (final ScannedFile scannedFile : scannedFiles) {
 
-            for (ScannedFile scannedFile : scannedFiles) {
-
-                if (!scannedFileWithLowerLengthName.fullPath.equals(scannedFile.fullPath)) {
+                if (rule.test(scannedFile, scannedFiles)) {
                     try {
                         Files.delete(Paths.get(scannedFile.fullPath));
                     } catch (final IOException e) {
                         logger.error("Error deleting file {" + scannedFile.fullPath + "} " + e.getMessage(), e);
                     }
                 }
-
             }
         }
     }

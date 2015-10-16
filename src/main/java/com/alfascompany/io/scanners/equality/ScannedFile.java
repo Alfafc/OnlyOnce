@@ -3,7 +3,7 @@ package com.alfascompany.io.scanners.equality;
 import java.io.File;
 import java.io.Serializable;
 
-public class ScannedFile implements Serializable {
+public class ScannedFile implements Comparable, Serializable {
 
     private static final long serialVersionUID = -2645028126125683552L;
 
@@ -31,5 +31,14 @@ public class ScannedFile implements Serializable {
                 ", name='" + name + '\'' +
                 ", sizeInBytes=" + sizeInBytes +
                 '}';
+    }
+
+    @Override
+    public int compareTo(final Object o) {
+
+        if (o == null || !(o instanceof ScannedFile)) {
+            return 0;
+        }
+        return ((ScannedFile) o).fullPath.compareTo(fullPath);
     }
 }

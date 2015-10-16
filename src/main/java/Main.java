@@ -7,6 +7,9 @@ import com.alfascompany.io.scanners.equality.criterias.SameSizeAndContentEqualit
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.BiPredicate;
 
 public class Main {
 
@@ -34,9 +37,25 @@ public class Main {
         System.err.println("Elapsed scan: " + (System.currentTimeMillis() - start) + " ms");
 
         filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsSize());
-        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(true));
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicated());
+//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(true));
+        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
+//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicated(
+//                new BiPredicate<ScannedFile, TreeSet<ScannedFile>>() {
+//                    @Override
+//                    public boolean test(final ScannedFile scannedFile, final TreeSet<ScannedFile> scannedFiles) {
+//
+//                        if (!scannedFiles.stream().allMatch(f -> f.folder.equals(scannedFile.folder))) {
+//                            return false;
+//                        }
+//
+//                        if (scannedFiles.first().fullPath.equals(scannedFile.fullPath)) {
+//                            System.err.println("Skip " + scannedFile.fullPath);
+//                            return false;
+//                        }
+//                        System.err.println("Delete " + scannedFile.fullPath);
+//                        return true;
+//                    }
+//                }));
 
         start = System.currentTimeMillis();
         System.err.println("Elapsed print: " + (System.currentTimeMillis() - start) + " ms");
