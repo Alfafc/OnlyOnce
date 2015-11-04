@@ -38,24 +38,9 @@ public class Main {
 
         filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsSize());
 //        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(true));
-        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicated(
-//                new BiPredicate<ScannedFile, TreeSet<ScannedFile>>() {
-//                    @Override
-//                    public boolean test(final ScannedFile scannedFile, final TreeSet<ScannedFile> scannedFiles) {
-//
-//                        if (!scannedFiles.stream().allMatch(f -> f.folder.equals(scannedFile.folder))) {
-//                            return false;
-//                        }
-//
-//                        if (scannedFiles.first().fullPath.equals(scannedFile.fullPath)) {
-//                            System.err.println("Skip " + scannedFile.fullPath);
-//                            return false;
-//                        }
-//                        System.err.println("Delete " + scannedFile.fullPath);
-//                        return true;
-//                    }
-//                }));
+//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
+        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicatedInSameFolder());
+//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicatedInSpecificFolders("D:\\CloudBackuped\\Fotos&Videos\\2012_09_07 Fotos de perros", "D:\\CloudBackuped\\Fotos&Videos\\2013_12_07 Fotos Flia-Amigos"));
 
         start = System.currentTimeMillis();
         System.err.println("Elapsed print: " + (System.currentTimeMillis() - start) + " ms");

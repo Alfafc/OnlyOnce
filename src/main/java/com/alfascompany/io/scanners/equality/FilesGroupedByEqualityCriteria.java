@@ -77,17 +77,17 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
     public void printEqualityFilesGroupsSize() {
 
         long totalSize = 0;
-        long duplicatedSize = 0;
+        long notDuplicatedSize = 0;
         for (final TreeSet<ScannedFile> scannedFiles : getEqualityFilesGroups(false)) {
 
-            duplicatedSize += scannedFiles.first().sizeInBytes;
+            notDuplicatedSize += scannedFiles.first().sizeInBytes;
             for (final ScannedFile scannedFile : scannedFiles) {
                 totalSize += scannedFile.sizeInBytes;
             }
         }
 
-        logger.info("Total size scanned {" + totalSize + "} bytes and duplicated files size {" + duplicatedSize + "} bytes");
-        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and NOT duplicated files size {" + ((double) duplicatedSize / 1024d / 1024d) + "} mb");
+        logger.info("Total size scanned {" + totalSize + "} bytes and NOT duplicated files size {" + notDuplicatedSize + "} bytes");
+        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and NOT duplicated files size {" + ((double) notDuplicatedSize / 1024d / 1024d) + "} mb");
     }
 
     public void printEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
@@ -136,6 +136,35 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
     }
 
+    public void removeDuplicatedInSpecificFolders(final String path, final String duplicatedPath) {
+
+        removeDuplicated(
+                new BiPredicate<ScannedFile, TreeSet<ScannedFile>>() {
+                    @Override
+                    public boolean test(final ScannedFile scannedFile, final TreeSet<ScannedFile> scannedFiles) {
+
+                        return scannedFile.folder.equals(duplicatedPath) &&
+                                scannedFiles.stream().anyMatch(f ->
+                                        !f.fullPath.equals(scannedFile.fullPath) &&
+                                                f.folder.equals(path));
+                    }
+                });
+    }
+
+    public void removeDuplicatedInSameFolder() {
+
+        removeDuplicated(
+                new BiPredicate<ScannedFile, TreeSet<ScannedFile>>() {
+                    @Override
+                    public boolean test(final ScannedFile scannedFile, final TreeSet<ScannedFile> scannedFiles) {
+
+                        return scannedFiles.stream().anyMatch(f ->
+                                !f.fullPath.equals(scannedFile.fullPath) &&
+                                        f.folder.equals(scannedFile.folder));
+                    }
+                });
+    }
+
     public void removeDuplicated(final BiPredicate<ScannedFile, TreeSet<ScannedFile>> rule) {
 
         for (final TreeSet<ScannedFile> scannedFiles : getEqualityFilesGroups(true)) {
@@ -143,11 +172,12 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
             for (final ScannedFile scannedFile : scannedFiles) {
 
                 if (rule.test(scannedFile, scannedFiles)) {
-                    try {
+                    logger.error("Delete " + scannedFile.fullPath + " --> " + scannedFiles.stream().map(s -> s.fullPath).collect(Collectors.toList()));
+                    /*try {
                         Files.delete(Paths.get(scannedFile.fullPath));
                     } catch (final IOException e) {
                         logger.error("Error deleting file {" + scannedFile.fullPath + "} " + e.getMessage(), e);
-                    }
+                    }*/
                 }
             }
         }
