@@ -136,23 +136,45 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
     }
 
-    public void interactivelyRemoveDuplicatedFilesGroupByFolder() {
+    public void interactivelyRemoveDuplicatedFiles(final boolean repeatLastActionForFolder) {
+
+        final StringBuilder currentFoldersStringBuilder = new StringBuilder(100);
+        String lastFolders = null;
+        int lastAction = 0;
 
         final Scanner scanner = new Scanner(System.in);
         for (final TreeSet<ScannedFile> equalityFilesGroup : getEqualityFilesGroups(true)) {
 
-            logger.info("");
-            logger.info("0) to do nothing ");
-            int i = 1;
+            currentFoldersStringBuilder.setLength(0);
             for (final ScannedFile scannedFile : equalityFilesGroup) {
-                logger.info((i++) + ") to mantain " + scannedFile.fullPath);
+                currentFoldersStringBuilder.append(scannedFile.folder);
+            }
+            final String currentFolders = currentFoldersStringBuilder.toString();
+
+            // select an option (if same folder and can repeart last action take the last one)
+            int option;
+            if (repeatLastActionForFolder && lastFolders != null && lastFolders.equals(currentFolders)) {
+                option = lastAction;
+            } else {
+
+                // let the user select an option
+                logger.info("Enter an option");
+                logger.info("0) to do nothing ");
+                int i = 1;
+                for (final ScannedFile scannedFile : equalityFilesGroup) {
+                    logger.info((i++) + ") to mantain " + scannedFile.fullPath);
+                }
+
+                option = scanner.nextInt();
+                while (option < 0 || option > equalityFilesGroup.size()) {
+                    logger.info("Invalid option " + option);
+                    option = scanner.nextInt();
+                }
+                lastAction = option;
+                lastFolders = currentFolders;
             }
 
-            int option = scanner.nextInt();
-            while (option < 0 || option > equalityFilesGroup.size()) {
-                logger.info("Invalid option " + option);
-                option = scanner.nextInt();
-            }
+            // execute the option if any
             if (option > 0) {
                 final Iterator<ScannedFile> iterator = equalityFilesGroup.iterator();
                 int j = 1;
@@ -215,8 +237,7 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
     private void removeFile(final ScannedFile scannedFile) {
         try {
             logger.error("Delete " + scannedFile.fullPath + " " + scannedFile.sizeInBytes);
-
-//                        Files.delete(Paths.get(scannedFile.fullPath));
+            Files.delete(Paths.get(scannedFile.fullPath));
         } catch (final Exception e) {
             logger.error("Error deleting file {" + scannedFile.fullPath + "} " + e.getMessage(), e);
         }
