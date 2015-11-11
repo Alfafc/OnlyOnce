@@ -86,8 +86,8 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
             }
         }
 
-        logger.info("Total size scanned {" + totalSize + "} bytes and NOT duplicated files size {" + notDuplicatedSize + "} bytes");
-        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and NOT duplicated files size {" + ((double) notDuplicatedSize / 1024d / 1024d) + "} mb");
+        final long duplicatedSize = totalSize - notDuplicatedSize;
+        logger.info("Total size scanned {" + ((double) totalSize / 1024d / 1024d) + "} mb and total duplicated files size {" + ((double) duplicatedSize / 1024d / 1024d) + "} mb");
     }
 
     public void printEqualityFilesGroups(final boolean onlyWithRepeatedFiles) {
@@ -105,7 +105,7 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
 
             if (folders.size() > 0 && !folders.contains(equalityFilesGroup.first().folder)) {
                 quantity++;
-                logger.info("Folder: " + folders);
+                logger.info("Folder: " + folders.first() + " {" + folders + " } ");
                 folders.clear();
             }
             for (final ScannedFile scannedFile : equalityFilesGroup) {
@@ -136,6 +136,38 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
         }
     }
 
+    public void interactivelyRemoveDuplicatedFilesGroupByFolder() {
+
+        final Scanner scanner = new Scanner(System.in);
+        for (final TreeSet<ScannedFile> equalityFilesGroup : getEqualityFilesGroups(true)) {
+
+            logger.info("");
+            logger.info("0) to do nothing ");
+            int i = 1;
+            for (final ScannedFile scannedFile : equalityFilesGroup) {
+                logger.info((i++) + ") to mantain " + scannedFile.fullPath);
+            }
+
+            int option = scanner.nextInt();
+            while (option < 0 || option > equalityFilesGroup.size()) {
+                logger.info("Invalid option " + option);
+                option = scanner.nextInt();
+            }
+            if (option > 0) {
+                final Iterator<ScannedFile> iterator = equalityFilesGroup.iterator();
+                int j = 1;
+                while (iterator.hasNext()) {
+                    final ScannedFile next = iterator.next(); //consume always
+                    if (j++ != option) {
+                        removeFile(next);
+                    }
+                }
+            }
+        }
+
+    }
+
+
     public void removeDuplicatedInSpecificFolders(final String path, final String duplicatedPath) {
 
         removeDuplicated(
@@ -158,9 +190,10 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
                     @Override
                     public boolean test(final ScannedFile scannedFile, final TreeSet<ScannedFile> scannedFiles) {
 
-                        return scannedFiles.stream().anyMatch(f ->
-                                !f.fullPath.equals(scannedFile.fullPath) &&
-                                        f.folder.equals(scannedFile.folder));
+                        final List<ScannedFile> sameFolderFiles = scannedFiles.stream().filter(s -> s.folder.equals(scannedFile.folder)).collect(Collectors.toList());
+
+                        return sameFolderFiles.size() > 1 && sameFolderFiles.contains(scannedFile) &&
+                                !scannedFile.fullPath.equals(sameFolderFiles.get(0).fullPath);
                     }
                 });
     }
@@ -172,14 +205,20 @@ public class FilesGroupedByEqualityCriteria<T> implements Serializable {
             for (final ScannedFile scannedFile : scannedFiles) {
 
                 if (rule.test(scannedFile, scannedFiles)) {
-                    logger.error("Delete " + scannedFile.fullPath + " --> " + scannedFiles.stream().map(s -> s.fullPath).collect(Collectors.toList()));
-                    /*try {
-                        Files.delete(Paths.get(scannedFile.fullPath));
-                    } catch (final IOException e) {
-                        logger.error("Error deleting file {" + scannedFile.fullPath + "} " + e.getMessage(), e);
-                    }*/
+                    logger.error("Delete " + scannedFile.fullPath + " " + scannedFile.sizeInBytes + " --> " + scannedFiles.stream().map(s -> s.fullPath).collect(Collectors.toList()));
+                    removeFile(scannedFile);
                 }
             }
+        }
+    }
+
+    private void removeFile(final ScannedFile scannedFile) {
+        try {
+            logger.error("Delete " + scannedFile.fullPath + " " + scannedFile.sizeInBytes);
+
+//                        Files.delete(Paths.get(scannedFile.fullPath));
+        } catch (final Exception e) {
+            logger.error("Error deleting file {" + scannedFile.fullPath + "} " + e.getMessage(), e);
         }
     }
 }

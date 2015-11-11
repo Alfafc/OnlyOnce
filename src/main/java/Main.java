@@ -13,11 +13,6 @@ import java.util.function.BiPredicate;
 
 public class Main {
 
-    //    private final static String ROOT_DIRECTORY_PATH = "G:\\";
-//    private final static String ROOT_DIRECTORY_PATH = "G:\\RecuperadoJPG";
-//    private final static String ROOT_DIRECTORY_PATH = "G:\\RecuperadoMP3";
-//    private final static String ROOT_DIRECTORY_PATH = "G:\\Salvado";
-//    private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped\\Fotos&Videos";
     private final static String ROOT_DIRECTORY_PATH = "D:\\CloudBackuped";
 
     public static void main(final String[] args) throws IOException {
@@ -37,12 +32,6 @@ public class Main {
         System.err.println("Elapsed scan: " + (System.currentTimeMillis() - start) + " ms");
 
         filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsSize());
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroups(true));
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.printEqualityFilesGroupsGroupByFolder(true));
-        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicatedInSameFolder());
-//        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.removeDuplicatedInSpecificFolders("D:\\CloudBackuped\\Fotos&Videos\\2012_09_07 Fotos de perros", "D:\\CloudBackuped\\Fotos&Videos\\2013_12_07 Fotos Flia-Amigos"));
-
-        start = System.currentTimeMillis();
-        System.err.println("Elapsed print: " + (System.currentTimeMillis() - start) + " ms");
+        filesGroupedByEqualityCriteriaList.stream().forEach(g -> g.interactivelyRemoveDuplicatedFilesGroupByFolder());
     }
 }
